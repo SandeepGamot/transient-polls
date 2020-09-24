@@ -1,14 +1,15 @@
 const mongoose = require("mongoose");
 
 const PollSchema = new mongoose.Schema({
+  is_public: { type: Boolean, default: false },
+  total_votes: { type: Number, default: 0 },
   question: {
     type: String,
     required: [
       true,
-      `Make sure that "question" is spelled properly and is given a non empty string.`,
+      `Validation failed for \"question\". Make sure it is spelled correctly and provided with non-empty string`,
     ],
   },
-
   choices: {
     type: [
       {
@@ -16,18 +17,24 @@ const PollSchema = new mongoose.Schema({
           type: String,
           required: [
             true,
-            `Make sure that \`text\` is spelled properly and is given a non empty string.`,
+            `Validation failed for \"text\". Make sure it is spelled correctly and provided with non-empty string`,
           ],
         },
         votes: { type: Number, default: 0 },
-        index: Number,
       },
     ],
-
     validate: {
       validator: (array) => array.length >= 2,
-      message: (error) => `Error: There must atleast be 2 choices.`,
+      message: `Validation for min length for \"choices\". Make sure choices array atleast have 2 choices`,
     },
+  },
+  expiry_time: Number,
+});
+
+PollSchema.set("toJSON", {
+  transform: function (doc, ret, options) {
+    delete ret.__v;
+    return ret;
   },
 });
 

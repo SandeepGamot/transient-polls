@@ -1,26 +1,36 @@
-require("dotenv").config({ path: __dirname + "/.env" });
-
 const express = require("express");
-const mongoose = require("mongoose");
-
-mongoose.connect(process.env.DB, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-});
-
-mongoose.connection
-  .once("open", () => console.log("db conn ok"))
-  .on("error", (err) => console.log("error"));
-
 const app = express();
-
+const config = require("./config");
+const mongoose = require("mongoose");
+const setupDatabase = require("./setup/database");
+mongoose.set("debug", true);
 app.use(express.json());
 app.use("/polls", require("./routes/polls"));
 
-app.set("port", process.env.PORT || 5000);
-
-app.listen(app.get("port"), () => {
-  if (process.env.NODE_ENV === "dev")
-    console.log(`http://localhost:${app.get("port")}`);
-  else console.log(`prod running on ${app.get("port")} `);
+app.all("*", (req, res, next) => {
+  res.status(404).json({
+    statusCode: 404,
+    message: `Error 404:${req.hostname + req.url} not found`,
+  });
 });
+
+app.use((error, req, res, next) => {
+  error.statusCode = error.statusCode || 500;
+  error.status = error.status || "Unknown Error";
+
+  res.status(error.statusCode).json({
+    status: error.status,
+    message: error.message,
+  });
+});
+
+setupDatabase(mongoose, config)
+  .then((message) => {
+    console.log(message);
+    app.listen(config.port, () => {
+      console.log(`http://localhost:${config.port}`);
+    });
+  })
+  .catch((message) => {
+    console.log(message);
+  });
