@@ -1,6 +1,7 @@
 const { response } = require("express");
 const e = require("express");
 const PollModel = require("../models/polls");
+const timecheck = require("../utils/timecheck");
 
 class PollService {
   static getAllPolls = async () => {
@@ -15,7 +16,13 @@ class PollService {
   static getPollById = async (id) => {
     try {
       const poll = await PollModel.findById(id);
-      if (poll) return poll;
+      if (poll) {
+        if (timecheck(poll.expiry_time)) return poll;
+        else {
+          await this.deletePollById(poll._id);
+          return { message: "The poll you were looking for has expired" };
+        }
+      }
       let err = new Error();
       err.status = 404;
       err.message = `\`404: No polls found with the given ID\``;
