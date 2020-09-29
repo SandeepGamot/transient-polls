@@ -3,7 +3,7 @@ const app = express();
 const config = require("./config");
 const mongoose = require("mongoose");
 const setupDatabase = require("./setup/database");
-mongoose.set("debug", true);
+
 app.use(express.json());
 app.use("/polls", require("./routes/polls"));
 

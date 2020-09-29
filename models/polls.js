@@ -1,5 +1,16 @@
 const mongoose = require("mongoose");
 
+var choiceArrayValidators = [
+  {
+    validator: (array) => array.length >= 2,
+    message: `Validation for min length for \`choices\`. Make sure choices array atleast have 2 choices`,
+  },
+  {
+    validator: (array) => array.length <= 10,
+    message: `Validation for max length for \`choices\`. Make sure choices array at max have 10 choices`,
+  },
+];
+
 const PollSchema = new mongoose.Schema({
   is_public: { type: Boolean, default: false },
   total_votes: { type: Number, default: 0 },
@@ -23,10 +34,7 @@ const PollSchema = new mongoose.Schema({
         votes: { type: Number, default: 0 },
       },
     ],
-    validate: {
-      validator: (array) => array.length >= 2,
-      message: `Validation for min length for \"choices\". Make sure choices array atleast have 2 choices`,
-    },
+    validate: choiceArrayValidators,
   },
   expiry_time: Number,
 });
