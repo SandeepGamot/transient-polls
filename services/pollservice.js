@@ -1,5 +1,3 @@
-const { response } = require("express");
-const e = require("express");
 const PollModel = require("../models/polls");
 const timecheck = require("../utils/timecheck");
 
@@ -9,7 +7,12 @@ class PollService {
       const polls = await PollModel.find();
       return polls;
     } catch (error) {
-      throw new Error(`GET \`/polls\` route failed with the error of ${error}`);
+      throw {
+        status: error.status || 500,
+        message: `GET \`/polls/\` route failed with the error ${
+          error.message || `Unknown Error Occurred`
+        }`,
+      };
     }
   };
 
@@ -18,19 +21,20 @@ class PollService {
       const poll = await PollModel.findById(id);
       if (poll) {
         if (timecheck(poll.expiry_time)) return poll;
-        else {
-          await this.deletePollById(poll._id);
-          return { message: "The poll you were looking for has expired" };
-        }
+        else await this.deletePollById(poll._id);
       }
-      let err = new Error();
-      err.status = 404;
-      err.message = `\`404: No polls found with the given ID\``;
-      throw err;
+
+      throw {
+        status: 404,
+        message: `\`404: No polls found with the given ID\``,
+      };
     } catch (error) {
-      throw new Error(
-        `GET \`/polls/:id\` route failed with the error ${error}`
-      );
+      throw {
+        status: error.status || 500,
+        message: `GET \`/polls/:id\` route failed with the error ${
+          error.message || `Unknown Error Occurred`
+        }`,
+      };
     }
   };
 
@@ -48,9 +52,12 @@ class PollService {
       const posted = await created.save();
       return posted;
     } catch (error) {
-      let err = new Error();
-      err.message = `POST \`/polls/create\` route failed with the error ${error}`;
-      throw err;
+      throw {
+        status: error.status || 500,
+        message: `POST \`/polls/create\` route failed with the error ${
+          error.message || `Unknown Error Occurred`
+        }`,
+      };
     }
   };
 
@@ -58,14 +65,17 @@ class PollService {
     try {
       const deleted = await PollModel.findByIdAndDelete(id);
       if (deleted) return deleted;
-      let err = new Error();
-      err.status = 404;
-      err.message = `\`404: No polls found with the given ID\``;
-      throw err;
+      throw {
+        status: 404,
+        message: `\`404: No polls found with the given ID\``,
+      };
     } catch (error) {
-      throw new Error(
-        `DELETE \`/polls/:id\` route failed with the error ${error}`
-      );
+      throw {
+        status: error.status || 500,
+        message: `DELETE \`/polls/:id\` route failed with the error ${
+          error.message || `Unknown Error Occurred`
+        }`,
+      };
     }
   };
 

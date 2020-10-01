@@ -1,1 +1,4 @@
-//setup middlewares here, yet to have any so it's still empty.
+const cors = require("cors");
+module.exports = (app) => {
+  app.use(cors());
+};
